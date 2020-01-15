@@ -22,10 +22,14 @@ $itemsCarrito = 0;
 $contCarrito = ControladorCarrito::getControlador();
 if (isset($_SESSION['CARRITO'])) {
     $itemsCarrito = $contCarrito->getTotalItems();
-} else if (isset($_COOKIE['CARRITO'])) {
+}
+
+if (isset($_COOKIE['CARRITO'])) {
     //$contCarrito->leerCarritoCookie();
     $itemsCarrito = $contCarrito->getTotalItems();
 }
+ 
+ 
 
 
 

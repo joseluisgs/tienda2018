@@ -30,7 +30,7 @@ class Producto implements Serializable {
         $this->marca = $marca;
         $this->modelo = $modelo;
         $this->descripcion = $descripcion;
-        $this->precio = $precio;
+        $this->precio = round($precio,2);
         $this->stock = $stock;
         $this->oferta = $oferta;
         $this->foto = $foto;
@@ -93,7 +93,7 @@ class Producto implements Serializable {
     }
 
     public function setPrecio($precio) {
-        $this->precio = $precio;
+        $this->precio = round($precio,2);
     }
 
     public function setStock($stock) {

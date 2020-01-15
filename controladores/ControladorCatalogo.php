@@ -32,10 +32,10 @@ class ControladorCatalogo {
     public function getConsultaCatalogo($marca, $modelo, $opcion) {
         if ($opcion != "Ofertas")
             return "select * from productos where (marca like '%" . $marca . "%' or modelo like '%" . $modelo . "%') "
-                    . "and tipo like '%" . $opcion . "%' and stock > '0'";
+                    . "and tipo like '%" . $opcion . "%'";
         else
             return "select * from productos where (marca like '%" . $marca . "%' or modelo like '%" . $modelo . "%') "
-                    . "and oferta = '1' and stock > '0'";;
+                    . "and oferta = '1'";;
     }
     
     public function filaInicio(){
@@ -62,7 +62,11 @@ class ControladorCatalogo {
                     echo "<h4 class = 'text-danger'>".$producto->getPrecio()."€</h4>";
                     echo "<a href = 'catalogo_producto.php?id=" . base64_encode($producto->getId()) . "' class = 'btn btn-info'><span class = 'glyphicon glyphicon-eye-open'></span> Ver más</a> ";
                     //echo "<a href = 'carrito_añadir.php?id=" .base64_encode($producto->getId()). "' class = 'btn btn-success'><span class = 'glyphicon glyphicon-shopping-cart'></span> Comprar</a>";
-                    echo "<a href = 'carrito_añadir.php?id=" .base64_encode($producto->getId()). "&dest=".$pagina."' onclick='procesarCompra(".($itemsCarrito+1).");' class = 'btn btn-success'><span class = 'glyphicon glyphicon-shopping-cart'></span> Comprar</a>";
+                    if($producto->getStock()>0){
+                        echo "<a href = 'carrito_añadir.php?id=" .base64_encode($producto->getId()). "&dest=".$pagina."'  class = 'btn btn-success'><span class = 'glyphicon glyphicon-shopping-cart'></span> Comprar</a>";
+                    }else{
+                        echo "<button type='button' class='btn btn-warning'>Sin Stock</button>";
+                    }
                 echo "</div>";
             echo "</div>";
         echo "</div>";

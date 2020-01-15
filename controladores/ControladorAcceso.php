@@ -28,10 +28,13 @@ class ControladorAcceso {
     
     public function salirSesion() {
         // Recuperamos la información de la sesión
+        error_reporting(E_ALL & ~E_NOTICE);
         session_start();
         // Y la eliminamos las variables de la sesión y coockies
         unset($_SESSION['USUARIO']);
         unset($_SESSION['CARRITO']);
+        unset($_SESSION['VENTA']);
+        unset($_SESSION['SESION']);
         unset($_COOKIE['ACCESO']);
         session_unset();
         session_destroy();
@@ -47,8 +50,10 @@ class ControladorAcceso {
 
             // Esto se puede remplazar por un usuario real guardado en la base de datos.
             if ($email == $usuario->getEmail() && $password == $usuario->getPass()) {
+                error_reporting(E_ALL & ~E_NOTICE);
                 session_start();
                 $_SESSION['USUARIO'] = base64_encode($usuario->getId());
+                session_regenerate_id();
                 header("location: ../index.php");
             } else {
                 echo "<div class='wrapper'>";
@@ -72,6 +77,7 @@ class ControladorAcceso {
     }
     
     public function controlAccesoUsuario(){
+        error_reporting(E_ALL & ~E_NOTICE);
         session_start();
         if(!isset($_SESSION['USUARIO'])){
             echo "<div class='wrapper'>";

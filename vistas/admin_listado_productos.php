@@ -30,7 +30,7 @@ $controlador->controlAccesoAdministrador();
                 <form class="form-inline" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                     <div class="form-group mx-sm-5 mb-2">
                         <label for="producto" class="sr-only">Marca o modelo</label>
-                        <input type="text" class="form-control" id="buscar" name="producto" placeholder="Marca o Modelo">
+                        <input type="text" class="form-control" id="buscar" name="filter" placeholder="Marca o Modelo">
                     </div>
                     <button type="submit" class="btn btn-primary mb-2"> <span class="glyphicon glyphicon-search"></span>  Buscar</button>
                     <!-- Aquí va el nuevo botón para dar de alta, podría ir al final -->
@@ -43,13 +43,17 @@ $controlador->controlAccesoAdministrador();
             <div class="page-header clearfix">        
             </div>
             <?php
-            // creamos la consulta dependiendo si venimos o no del formulario
-            if (!isset($_POST["producto"])) {
-                $marca = "";
-                $modelo = "";
-            } else {
-                $marca = $_POST["producto"];
-                $modelo = $_POST["producto"];
+            // Marca o Modelo
+            $filtro="";
+            if (isset($_GET["filter"]) && !empty(trim($_GET["filter"]))) {
+                $filtro = $_GET["filter"];
+            } else{
+                $filtro ="";
+            }
+
+            // Procesamos el buscador
+            if (isset($_POST["filter"])) {
+                $filtro = $_POST["filter"];
             }
             // Cargamos el controlador de usuarios --> Cabiamos para incluir el paginador
             $controlador = ControladorProducto::getControlador();
@@ -59,7 +63,8 @@ $controlador->controlAccesoAdministrador();
             $enlaces = ( isset($_GET['enlaces']) ) ? $_GET['enlaces'] : 10;
             
             // Consulta a realizar
-            $consulta = $controlador->getConsultaListado($marca, $modelo);
+            $consulta = $controlador->getConsultaListado($filtro, $filtro);
+            //echo $consulta;
             // Sacamos cuatro por página
             $limite = 4;
             $paginador  = new Paginador($consulta, $limite);
@@ -120,9 +125,12 @@ $controlador->controlAccesoAdministrador();
                 echo "</tbody>";
                 echo "</table>";
                 
-                echo "<ul class='pager'>"; //  <ul class="pagination">
-                echo $paginador->crearLinks($enlaces);
+                // Paginador
+                echo "<div class='text-center'>"; // Para centrar
+                echo "<ul class='pagination'>"; //  <ul class="paginationr">
+                    echo $paginador->crearLinks($enlaces, $filtro, $pagina);
                 echo "</ul>";
+                echo "</div>";
             } else {
                 // Si no hay nada seleccionado
                 echo "<p class='lead'><em>No se ha encontrado datos de productos.</em></p>";

@@ -104,7 +104,13 @@ if (isset($_GET["id"]) && !empty(trim($_GET["id"]))) {
                     <p class="form-control-static"><?php echo str_replace("\n", "<br/>", utf8_encode($producto->getDescripcion())); ?></p>
                 </div>
                 <p><a href="javascript:history.back()" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> Aceptar</a>  
-                <?php echo "<a href = 'carrito_añadir.php?id=" .base64_encode($producto->getId()). "&dest=".$pagina."' onclick='procesarCompra(".($itemsCarrito+1).");' class = 'btn btn-success'><span class = 'glyphicon glyphicon-shopping-cart'></span> Comprar</a>"; ?>
+                <?php 
+                    if($producto->getStock()>0){
+                        echo "<a href = 'carrito_añadir.php?id=" .base64_encode($producto->getId()). "&dest=".$pagina."'  class = 'btn btn-success'><span class = 'glyphicon glyphicon-shopping-cart'></span> Comprar</a>";
+                    }else{
+                        echo "<button type='button' class='btn btn-warning'>Sin Stock</button>";
+                    }
+                ?>
                     
             </div>
         </div>        

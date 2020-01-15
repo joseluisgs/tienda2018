@@ -1,30 +1,49 @@
-<?php
+ <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . "/tienda/dirs.php";
 require_once CONTROLLER_PATH . "ControladorCarrito.php";
 require_once CONTROLLER_PATH . "ControladorAcceso.php";
 
+
+
 // Cabecera
 require_once VIEW_PATH . "cabecera.php";
 
-
-
 // Barra de Navegacion
 require_once VIEW_PATH . "navbar.php";
+
+// Control de acceso
+$controlador = ControladorAcceso::getControlador();
+$controlador->controlAccesoUsuario();
 ?>
-
-
 <?php
-// Codigo de procesamiento del formulario
 
-// Si pulsmos vaciar
+$contCarrito = ControladorCarrito::getControlador();
+$carrito=0;
+
 if (isset($_GET['VACIAR'])) {
     if ($_GET['VACIAR']) {
-        $_SESSION['CARRITO'] = "";
-        echo '<script type="text/javascript">
-                    document.getElementById("carrito").innerHTML = 0;
-              </script>';
+        //$_SESSION['CARRITO'] = "";
+        $carrito=0;
+        $contCarrito->destruirCarrito();
+        //Consulta cual es la página que ha llamado a este script
+        $page = $_SERVER['PHP_SELF']; 
+        //Refresa la pagina, el valor 0 es el numero de segundos que espera para refrescar.
+        header("Refresh: 0; url=$page"); 
     }
 }
+
+if($contCarrito->getTotalItems()>0){
+    $carrito = $contCarrito->getCantidadPorItem();
+}
+
+// Si el carrito está vacío
+if($carrito==0 || $_SESSION['CARRITO'] == "" || !isset($_SESSION['CARRITO'])){
+   $contCarrito->carritoVacio();
+}
+
+
+// Codigo de procesamiento del formulario
+// Si pulsmos vaciar
 
 if (isset($_GET['BORRAR'])) {
     if (isset($_SESSION['CARRITO'])) {
@@ -44,23 +63,13 @@ if (isset($_GET['BORRAR'])) {
         header("Refresh: 0; url=$page"); 
     }
 }
-
-$contCarrito = ControladorCarrito::getControlador();
-
-$carrito = $contCarrito->getCantidadPorItem();
-$precioTotal = 0;
-
-// Si el carrito está vacío
-if($carrito==0 || $_SESSION['CARRITO'] == ""){
-   $carrito->carritoVacio();
-}
 ?>
 
 <main role="main">
     <section class="page-header clearfix text-center">
         <h2>Carrito de compra</h2>
     </section>
-    <form name="form_carrito" method="POST" action="validar_pedido.php">
+    <form name="form_carrito" method="POST" action="carrito_pago.php">
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-12 col-md-10 col-md-offset-1">
@@ -70,8 +79,8 @@ if($carrito==0 || $_SESSION['CARRITO'] == ""){
                     <thead>
                         <tr>
                             <th>Producto</th>
-                            <th>Cantidad</th>
                             <th class="text-center">Precio</th>
+                            <th>Cantidad</th>
                             <th class="text-center">Total</th>
                             <th>  </th>
                         </tr>
@@ -80,52 +89,14 @@ if($carrito==0 || $_SESSION['CARRITO'] == ""){
                     <tbody>
                         
                         <?php
+                            
                             foreach ($carrito as $id => $cantidad){
-                                //echo $cod."-".$cant."</br>";
+                                //echo $id."-".$cantidad."</br>";
                                 // Imprimo cada fila del item
+                                $contCarrito->getItem($id, $cantidad);
                             }
                         ?>
-                        
-                        <tr>
-                            <td class="col-sm-8 col-md-6">
-                                <div class="media">
-                                    <a class="thumbnail pull-left" href="#"> <img class="media-object" src="http://icons.iconarchive.com/icons/custom-icon-design/flatastic-2/72/product-icon.png" style="width: 72px; height: 72px;"> </a>
-                                    <div class="media-body">
-                                        <h4 class="media-heading"><a href="#"> Modelo</a></h4>
-                                        <h5 class="media-heading"> by <a href="#"> Marca</a></h5>
-                                        <span>Descripción: </span><span class="text-success"><strong>bla bla bla</strong></span>
-                                    </div>
-                                </div></td>
-                            <td class="col-sm-1 col-md-1" style="text-align: center">
-                                <input type="number" class="form-control" min="1" max="10" id="exampleInputEmail1" value="3">
-                            </td>
-                            <td class="col-sm-1 col-md-1 text-center"><strong>4.87€</strong></td>
-                            <td class="col-sm-1 col-md-1 text-center"><strong>14.61€</strong></td>
-                            <td class="col-sm-1 col-md-1">
-                                <button type="button" class="btn btn-danger">
-                                    <span class="glyphicon glyphicon-remove"></span> Eliminar
-                                </button></td>
-                        </tr>
-                        <tr>
-                            <td class="col-md-6">
-                                <div class="media">
-                                    <a class="thumbnail pull-left" href="#"> <img class="media-object" src="http://icons.iconarchive.com/icons/custom-icon-design/flatastic-2/72/product-icon.png" style="width: 72px; height: 72px;"> </a>
-                                    <div class="media-body">
-                                        <h4 class="media-heading"><a href="#">Modelo/a></h4>
-                                        <h5 class="media-heading"> by <a href="#">Marca</a></h5>
-                                        <span>Descripción: </span><span class="text-warning"><strong>bla bla bla</strong></span>
-                                    </div>
-                                </div></td>
-                            <td class="col-md-1" style="text-align: center">
-                                <input type="number" class="form-control" min="1" max="10" id="exampleInputEmail1" value="2">
-                            </td>
-                            <td class="col-md-1 text-center"><strong>4.99€</strong></td>
-                            <td class="col-md-1 text-center"><strong>9.98€</strong></td>
-                            <td class="col-md-1">
-                                <button type="button" class="btn btn-danger">
-                                    <span class="glyphicon glyphicon-remove"></span> Eliminar
-                                </button></td>
-                        </tr>
+            
                     </tbody>
                     <!-- Pie de Tabla -->
                     <tfoot>
@@ -133,24 +104,32 @@ if($carrito==0 || $_SESSION['CARRITO'] == ""){
                             <td>   </td>
                             <td>   </td>
                             <td>   </td>
-                            <td><h5>Subtotal<br>I.V.A</h5><h3>Total</h3></td>
-                            <td class="text-right"><h5><strong>24.59€<br>6.94€</strong></h5><h3>31.53€</h3></td>
+                            <td>
+                                <h3><strong>
+                                        <span class="precioTotalTexto">Total</span>
+                                </strong></h3>
+                            <td class="text-right">
+                                <?php
+                                echo "<h3><strong>";
+                                    echo "<span id='precioTotal'>".ControladorCarrito::$precioTotal." </span>";
+                                echo " €</strong></h3>";
+                                ?>
+                            </td>
+                            
                         </tr>
-
+                            
                         <tr>
                             <td>
-                                <a href="principal.php" class="btn btn-default"><span class="glyphicon glyphicon-shopping-cart"></span> Seguir Comprando</a>
+                                <a href="principal.php" class="btn btn-primary"><span class="glyphicon glyphicon-shopping-cart"></span> Seguir Comprando</a>
                             </td>
                             <td>   </td>
                             <td>   </td>
                             <td>
-                                <button type="button" class="btn btn-info">
-                                    <span class="glyphicon glyphicon-refresh"></span> Actualizar Carro
-                                </button></td>
+                                <a href="carrito_compra.php?VACIAR=1" class="btn btn-danger"><span class="glyphicon glyphicon-trash"></span> Vaciar Carrito</a>
+                            </td>
                             <td>
-                                <button type="button" class="btn btn-success">
-                                    <span class="glyphicon glyphicon-credit-card"></span>  Pagar Compra
-                                </button></td>
+                                <button type="submit" class="btn btn-success"> <span class="glyphicon glyphicon-credit-card"></span>  Pagar compra</button>
+                            </td>
                         </tr>
 
                     </tfoot>

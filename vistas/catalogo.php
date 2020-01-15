@@ -28,20 +28,22 @@ if (isset($_GET["tipo"]) && !empty(trim($_GET["tipo"]))) {
     }
 
 }
+// Marca o Modelo
+if (isset($_GET["filter"]) && !empty(trim($_GET["filter"]))) {
+    $filtro = $_GET["filter"];
+} else{
+    $filtro ="";
+}
 
 // Procesamos el buscador
-if (!isset($_POST["producto"])) {
-    $marca = "";
-    $modelo = "";
-} else {
-    $marca = $_POST["producto"];
-    $modelo = $_POST["producto"];
+if (isset($_POST["filter"])) {
+    $filtro = $_POST["filter"];
     $opcion = $_POST["opcion"];
 }
 
  // Consulta a realizar
 $controlador = ControladorCatalogo::getControlador();
-$consulta = $controlador->getConsultaCatalogo($marca, $modelo, $opcion);
+$consulta = $controlador->getConsultaCatalogo($filtro, $filtro, $opcion);
 //echo $consulta;
 
 // Configuramos el paginador
@@ -50,7 +52,7 @@ $columnas = 4;
 $limite = $filas * $columnas; // Dos filas de 4
 
 $pagina = ( isset($_GET['page']) ) ? $_GET['page'] : 1;
-$enlaces = ( isset($_GET['enlaces']) ) ? $_GET['enlaces'] : 10;
+$enlaces = ( isset($_GET['limit']) ) ? $_GET['limit'] : 10;
 
 $paginador  = new Paginador($consulta, $limite);
 $resultados = $paginador->getDatos($pagina);
@@ -64,7 +66,7 @@ $resultados = $paginador->getDatos($pagina);
     <section class="page-header clearfix text-center">
         <form class="form-inline" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                     <div class="form-group mx-sm-5 mb-2">
-                        <input type="text" class="form-control" id="buscar" name="producto" placeholder="Marca o Modelo">
+                        <input type="text" class="form-control" id="buscar" name="filter" placeholder="Marca o Modelo">
                     </div>
                     <input type="hidden" name="opcion" value="<?php echo $opcion; ?>"/>
                     <button type="submit" class="btn btn-primary mb-2"> <span class="glyphicon glyphicon-search"></span>  Buscar en <?php echo $opcion; ?></button>
@@ -85,18 +87,20 @@ $resultados = $paginador->getDatos($pagina);
                 $producto = new Producto($dato["ID"], $dato["TIPO"], $dato["MARCA"], $dato["MODELO"], $dato["DESCRIPCION"], $dato["PRECIO"], 
                             $dato["STOCK"], $dato["OFERTA"], $dato["FOTO"]);
                 // Imprimimos los resultados
-                 echo $controlador->getProducto($producto, base64_encode("principal.php"));
+                echo $controlador->getProducto($producto, base64_encode("principal.php"));
                 $item++;
-                if($item % 4 == 0){
+                if($item % $columnas == 0){
                     $controlador->filaFin();
                     echo $controlador->filaInicio();
                 }
             }
             $controlador->filaFin();
             // Paginador
-            echo "<ul class='pager'>"; //  <ul class="pagination">
-                echo $paginador->crearLinks($enlaces);
-            echo "</ul>";
+                echo "<div class='text-center'>"; // Para centrar
+                echo "<ul class='pagination'>"; //  <ul class="paginationr">
+                    echo $paginador->crearLinks($enlaces, $filtro, $pagina);
+                echo "</ul>";
+                echo "</div>";
             
         } else {
                 // Si no hay nada seleccionado

@@ -30,7 +30,7 @@ $controlador->controlAccesoAdministrador();
                 <form class="form-inline" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                     <div class="form-group mx-sm-5 mb-2">
                         <label for="usuario" class="sr-only">Nombre o Apellidos</label>
-                        <input type="text" class="form-control" id="buscar" name="usuario" placeholder="Nombre o E-Mail">
+                        <input type="text" class="form-control" id="buscar" name="filter" placeholder="Nombre o E-Mail">
                     </div>
                     <button type="submit" class="btn btn-primary mb-2"> <span class="glyphicon glyphicon-search"></span>  Buscar</button>
                     <!-- Aquí va el nuevo botón para dar de alta, podría ir al final -->
@@ -45,12 +45,16 @@ $controlador->controlAccesoAdministrador();
             <?php
             // creamos la consulta dependiendo si venimos o no del formulario
             // para el buscador: select * from alumnado where nombre like "%%" or apellidos like "%%"
-            if (!isset($_POST["usuario"])) {
-                $nombre = "";
-                $email = "";
-            } else {
-                $nombre = $_POST["usuario"];
-                $email = $_POST["usuario"];
+            // Marca o Modelo
+            if (isset($_GET["filter"]) && !empty(trim($_GET["filter"]))) {
+                $filtro = $_GET["filter"];
+            } else{
+                $filtro ="";
+            }
+
+            // Procesamos el buscador
+            if (isset($_POST["filter"])) {
+                $filtro = $_POST["filter"];
             }
             // Cargamos el controlador de usuarios --> Cabiamos para incluir el paginador
             $controlador = ControladorUsuario::getControlador();
@@ -61,7 +65,7 @@ $controlador->controlAccesoAdministrador();
             $enlaces = ( isset($_GET['enlaces']) ) ? $_GET['enlaces'] : 10;
             
             // Consulta a realizar
-            $consulta = $controlador->getConsultaListado($nombre, $email);
+            $consulta = $controlador->getConsultaListado($filtro, $filtro);
             $limite = 2;
             $paginador  = new Paginador($consulta, $limite);
             $resultados = $paginador->getDatos($pagina);
@@ -116,9 +120,12 @@ $controlador->controlAccesoAdministrador();
                 echo "</tbody>";
                 echo "</table>";
                 
-                echo "<ul class='pager'>"; //  <ul class="pagination">
-                echo $paginador->crearLinks($enlaces);
+                // Paginador
+                echo "<div class='text-center'>"; // Para centrar
+                echo "<ul class='pagination'>"; //  <ul class="paginationr">
+                    echo $paginador->crearLinks($enlaces, $filtro, $pagina);
                 echo "</ul>";
+                echo "</div>";
             } else {
                 // Si no hay nada seleccionado
                 echo "<p class='lead'><em>No se ha encontrado datos de usuarios/as.</em></p>";
